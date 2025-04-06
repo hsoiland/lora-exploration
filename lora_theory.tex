@@ -1,0 +1,210 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning}
+
+\title{Low-Rank Adaptation (LoRA): Mathematical Foundations and Implementation}
+\author{Documentation for LoRA Training Implementation}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\section{Introduction to LoRA}
+
+Low-Rank Adaptation (LoRA) is a parameter-efficient fine-tuning method introduced by Hu et al. \cite{hu2021lora} that significantly reduces the number of trainable parameters in large models. This approach is particularly effective for large pre-trained models like those used in diffusion models.
+
+\subsection{Motivation}
+
+Fine-tuning large models has several challenges:
+\begin{itemize}
+    \item Storage requirements for multiple fine-tuned versions
+    \item Computational costs of full fine-tuning
+    \item Risk of catastrophic forgetting
+\end{itemize}
+
+LoRA addresses these challenges by adapting only a small subset of parameters represented through low-rank matrices.
+
+\section{Mathematical Foundation}
+
+\subsection{Core Formulation}
+
+The core insight of LoRA is that the weight updates during fine-tuning have a low intrinsic rank. Instead of directly updating the weight matrix $W_0 \in \mathbb{R}^{d \times k}$, LoRA approximates the update using a low-rank decomposition:
+
+\begin{equation}
+W = W_0 + \Delta W = W_0 + BA
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $W_0$ is the pre-trained weight matrix (frozen)
+    \item $\Delta W$ is the update matrix
+    \item $B \in \mathbb{R}^{d \times r}$ and $A \in \mathbb{R}^{r \times k}$ are low-rank matrices
+    \item $r$ is the rank (typically $r \ll \min(d, k)$)
+\end{itemize}
+
+This reduces the number of trainable parameters from $d \times k$ to $r(d + k)$, which is a significant reduction when $r$ is small.
+
+\subsection{Forward Pass Computation}
+
+During the forward pass, the computation becomes:
+
+\begin{equation}
+y = xW = x(W_0 + BA) = xW_0 + xBA
+\end{equation}
+
+The term $xW_0$ represents the output of the original pre-trained model, while $xBA$ represents the adaptation. This allows for a clear separation between the original model and the adaptation component.
+
+\subsection{Scaling Factor}
+
+In practice, a scaling factor $\alpha$ is introduced to control the magnitude of the adaptation:
+
+\begin{equation}
+y = xW_0 + \alpha \cdot xBA
+\end{equation}
+
+This scaling factor allows for better control over the influence of the adaptation during training and inference.
+
+\section{Optimization Objective}
+
+\subsection{Diffusion Model Objective}
+
+For diffusion models, the standard training objective is:
+
+\begin{equation}
+L = \mathbb{E}_{\epsilon \sim \mathcal{N}(0,1), t, x_0}[||\epsilon - \epsilon_\theta(x_t, t, c)||^2]
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $\epsilon$ is random noise
+    \item $\epsilon_\theta$ is the model's prediction
+    \item $x_t$ is the noisy image at timestep $t$
+    \item $c$ is the conditioning (text embeddings)
+\end{itemize}
+
+\subsection{LoRA Optimization}
+
+When training with LoRA, we only update the low-rank matrices $A$ and $B$, keeping the original weights $W_0$ frozen. The gradients for $A$ and $B$ are derived through the chain rule:
+
+\begin{align}
+\frac{\partial L}{\partial A} &= \frac{\partial L}{\partial \Delta W} \frac{\partial \Delta W}{\partial A} = \frac{\partial L}{\partial \Delta W}B^T \\
+\frac{\partial L}{\partial B} &= \frac{\partial L}{\partial \Delta W} \frac{\partial \Delta W}{\partial B} = \frac{\partial L}{\partial \Delta W}A^T
+\end{align}
+
+\section{Implementation Considerations}
+
+\subsection{Weight Initialization}
+
+Proper initialization of the LoRA matrices is crucial for training stability:
+
+\begin{itemize}
+    \item Matrix $A$ is typically initialized with Gaussian noise scaled by a small factor (0.01-0.02)
+    \item Matrix $B$ is initialized to zero, ensuring the LoRA component starts with no impact
+\end{itemize}
+
+In code, this is implemented as:
+
+\begin{verbatim}
+lora_down = torch.randn(rank, in_features) * 0.01  # Matrix A
+lora_up = torch.zeros(out_features, rank)          # Matrix B
+\end{verbatim}
+
+\subsection{Target Module Selection}
+
+Not all layers in a model contribute equally to adaptation. For diffusion models like SDXL, attention layers play a critical role in determining style and content. Common target modules include:
+
+\begin{itemize}
+    \item Query, key, and value projection layers in self-attention blocks
+    \item Cross-attention layers, especially in the middle blocks
+    \item Selected feed-forward layers
+\end{itemize}
+
+\subsection{Rank Selection}
+
+The rank $r$ determines the expressiveness of the adaptation. Higher ranks offer more flexibility but require more parameters. Common values are:
+
+\begin{itemize}
+    \item $r=4$ for lightweight adaptations
+    \item $r=8$ for balanced adaptations
+    \item $r=16$ or higher for more expressive adaptations
+\end{itemize}
+
+\subsection{Computational Efficiency with Rust}
+
+Our implementation uses Rust for efficient matrix operations in the LoRA adaptation. The key operation is:
+
+\begin{equation}
+W' = W_0 + \alpha \cdot BA
+\end{equation}
+
+This is implemented in Rust for performance, handling the low-level operations while exposing a Python interface for integration with PyTorch.
+
+\section{Algorithm}
+
+\begin{algorithm}
+\caption{LoRA Training Loop}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Pre-trained model with weights $W_0$, training data, rank $r$, learning rate $\eta$, scaling factor $\alpha$
+\State \textbf{Output:} LoRA matrices $A$ and $B$
+
+\State Initialize $A \sim \mathcal{N}(0, 0.01^2)$
+\State Initialize $B = 0$
+\State Freeze all original model parameters $W_0$
+
+\For{epoch $= 1$ to $n\_epochs$}
+    \For{batch in dataloader}
+        \State Generate latent representation and add noise
+        \State Compute model prediction with LoRA adaptation
+        \State Calculate loss $L = ||\epsilon - \epsilon_\theta(x_t, t, c)||^2$
+        \State Compute gradients $\frac{\partial L}{\partial A}$ and $\frac{\partial L}{\partial B}$
+        \State Update LoRA matrices:
+        \State $A \leftarrow A - \eta \cdot \frac{\partial L}{\partial A}$
+        \State $B \leftarrow B - \eta \cdot \frac{\partial L}{\partial B}$
+    \EndFor
+\EndFor
+\State Save LoRA matrices $A$ and $B$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Advantages and Limitations}
+
+\subsection{Advantages}
+\begin{itemize}
+    \item Memory efficiency: Only training a small subset of parameters
+    \item Storage efficiency: LoRA adapters are much smaller than full models
+    \item Composability: Multiple adaptations can be combined
+    \item Reduced risk of catastrophic forgetting
+\end{itemize}
+
+\subsection{Limitations}
+\begin{itemize}
+    \item Limited expressiveness compared to full fine-tuning
+    \item May not capture all aspects of adaptation
+    \item Requires careful selection of target modules
+\end{itemize}
+
+\section{Conclusion}
+
+LoRA offers a powerful approach for efficient fine-tuning of large models, especially diffusion models. By representing weight updates through low-rank decomposition, it significantly reduces computational requirements while maintaining good adaptation quality. Our implementation combines the strengths of PyTorch for high-level operations and Rust for efficient low-level matrix computations.
+
+\begin{thebibliography}{9}
+\bibitem{hu2021lora}
+Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., Wang, L., \& Chen, W. (2021).
+\textit{LoRA: Low-Rank Adaptation of Large Language Models}.
+arXiv preprint arXiv:2106.09685.
+
+\bibitem{diffusion}
+Ho, J., Jain, A., \& Abbeel, P. (2020).
+\textit{Denoising Diffusion Probabilistic Models}.
+Advances in Neural Information Processing Systems.
+\end{thebibliography}
+
+\end{document} 

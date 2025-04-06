@@ -1,0 +1,32 @@
+[project]
+name = "loras"
+version = "0.1.0"
+description = "LoRA transformations with Rust backend"
+authors = [
+    {name = "Harry"}
+]
+readme = "README.md"
+requires-python = "^3.8"
+dependencies = [
+    "opencv-python (>=4.11.0.86,<5.0.0.0)",
+    "torch (>=2.0.0)",
+    "safetensors (>=0.3.0)",
+    "numpy (>=1.24.0)",
+    "maturin (>=1.0.0)",
+    "facenet-pytorch (>=2.5.0)",
+    "Pillow (>=10.0.0)",
+    "transformers (>=4.37.0)",
+    "diffusers (>=0.27.0)",
+    "accelerate (>=0.27.0)",
+    "peft (>=0.8.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0", "maturin>=1.0.0,<2.0.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+python-source = "src"
+module-name = "lora_ops"
+features = ["pyo3/extension-module"]

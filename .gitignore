@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Poetry
+.venv/
+poetry.lock
+
+# Rust
+target/
+Cargo.lock
+**/*.rs.bk
+
+# Model files
+sdxl-base-1.0/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+
+# Output directories
+*_output/
+*_lora_output/
+trained_lora/
+
+# Temporary files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo 
