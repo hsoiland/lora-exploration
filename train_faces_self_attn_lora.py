@@ -9,7 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from diffusers import StableDiffusionXLPipeline, DDPMScheduler
 from safetensors.torch import save_file
-from src.rust_lora_self_attn import find_self_attention_modules, apply_lora_rust, train_lora_for_self_attention
+from src.python_lora_self_attn import find_self_attention_modules, apply_lora_to_self_attention, train_lora_for_self_attention
 
 class FaceDataset(Dataset):
     """Dataset for training on face images"""
@@ -306,7 +306,6 @@ def main():
         ).to(device)
         
         # Apply trained LoRA
-        from src.rust_lora_self_attn import apply_lora_to_self_attention
         apply_lora_to_self_attention(
             inference_pipeline.unet,
             final_lora_path,

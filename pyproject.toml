@@ -1,32 +1,43 @@
-[project]
+[tool.poetry]
 name = "loras"
 version = "0.1.0"
 description = "LoRA transformations with Rust backend"
-authors = [
-    {name = "Harry"}
-]
+authors = ["Harry"]
 readme = "README.md"
-requires-python = "^3.8"
-dependencies = [
-    "opencv-python (>=4.11.0.86,<5.0.0.0)",
-    "torch (>=2.0.0)",
-    "safetensors (>=0.3.0)",
-    "numpy (>=1.24.0)",
-    "maturin (>=1.0.0)",
-    "facenet-pytorch (>=2.5.0)",
-    "Pillow (>=10.0.0)",
-    "transformers (>=4.37.0)",
-    "diffusers (>=0.27.0)",
-    "accelerate (>=0.27.0)",
-    "peft (>=0.8.0)"
+packages = [
+    {include = "src"}
 ]
 
+[tool.poetry.dependencies]
+python = "3.12.3"
+opencv-python = ">=4.11.0.86,<5.0.0.0"
+torch = ">=2.0.0"
+safetensors = ">=0.3.0"
+numpy = ">=1.24.0"
+maturin = ">=1.0.0"
+facenet-pytorch = ">=2.5.0"
+Pillow = ">=10.0.0"
+transformers = ">=4.34.0"
+diffusers = ">=0.26.3"
+accelerate = ">=0.25.0"
+peft = ">=0.6.0"
+tqdm = ">=4.64.0"
+lion-pytorch = ">=0.1.2"
+bitsandbytes = ">=0.41.0"
+torchvision = ">=0.16.0"
+xformers = {version = ">=0.0.22", optional = true}
+
+[tool.poetry.extras]
+gpu = ["xformers"]
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0", "maturin>=1.0.0,<2.0.0"]
-build-backend = "maturin"
+requires = ["poetry-core>=1.0.0", "maturin>=1.0.0,<2.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.maturin]
 python-source = "src"
 module-name = "lora_ops"
 features = ["pyo3/extension-module"]
+manifest-path = "src/loras/Cargo.toml"
+
+
