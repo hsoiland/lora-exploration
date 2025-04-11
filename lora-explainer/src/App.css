@@ -1,0 +1,143 @@
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #2ecc71;
+  --accent-color: #e74c3c;
+  --bg-color: #f8f9fa;
+  --text-color: #333;
+  --sidebar-width: 250px;
+  --header-height: 100px;
+  --footer-height: 60px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  line-height: 1.6;
+}
+
+.lora-explainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  height: var(--header-height);
+  padding: 1rem 2rem;
+  background-color: white;
+  border-bottom: 1px solid #eaeaea;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+header h1 {
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.content-container {
+  display: flex;
+  flex: 1;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: white;
+  border-right: 1px solid #eaeaea;
+  padding: 2rem 0;
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar li {
+  padding: 1rem 2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar li:hover {
+  background-color: #f0f7fc;
+}
+
+.sidebar li.active {
+  background-color: #e6f3fb;
+  border-left: 4px solid var(--primary-color);
+  font-weight: 600;
+}
+
+.content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.diagram-container {
+  width: 100%;
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.diagram-container h2 {
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+}
+
+.diagram-container p {
+  margin-bottom: 1rem;
+}
+
+.interactive-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.button:hover {
+  background-color: #2980b9;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.slider-container label {
+  min-width: 100px;
+}
+
+footer {
+  height: var(--footer-height);
+  padding: 1rem 2rem;
+  background-color: white;
+  border-top: 1px solid #eaeaea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #666;
+}
