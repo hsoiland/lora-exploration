@@ -20,6 +20,10 @@ var/
 .installed.cfg
 *.egg
 
+# lora-explainer
+lora-explainer/node_modules/
+lora-explainer/dist/
+
 # Poetry
 .venv/
 poetry.lock
@@ -48,3 +52,4 @@ trained_lora/
 .vscode/
 *.swp
 *.swo 
+venv/

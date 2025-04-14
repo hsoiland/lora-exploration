@@ -1,0 +1,9 @@
+CFG Scale: 9.0
+Seed: 483196137
+Prompt: a woman with black hair, side bangs, pale skin, high quality photo, heavy eyeliner, black choker, band t-shirt, mirror selfie, Canon 35mm
+Negative prompt: worst quality, low quality, text, watermark, deformed
+LoRA 1: /home/harry/loras/emo_style_lora/emo_style_lora.safetensors (Emo Style)
+LoRA 2: /home/harry/loras/gina_style_lora/gina_style_lora.safetensors (Gina Style)
+Alpha range: 0.0 to 4.0 (step: 0.1)
+Steps: 30
+Base model: stabilityai/stable-diffusion-xl-base-1.0
